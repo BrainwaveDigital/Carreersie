@@ -1,5 +1,6 @@
 import React from 'react'
 import { getSupabaseServer } from '@/lib/supabase'
+import { headers } from 'next/headers'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -7,6 +8,27 @@ type Props = { params: { id: string } }
 
 export default async function ParsedPage({ params }: Props) {
   const id = params.id
+
+  // Enforce owner-or-admin access: expect a Bearer <access_token> in the request
+  // Validate token with Supabase auth endpoint and check profiles.is_admin or ownership.
+  const hdrs = await headers()
+  const auth = hdrs.get('authorization')
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return <div className="p-6">Unauthorized. Missing Authorization header.</div>
+  }
+  const token = auth.split(' ')[1]
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!supabaseUrl) return <div className="p-6">Server configuration error: SUPABASE URL not set.</div>
+
+  const userRes = await fetch(new URL('/auth/v1/user', supabaseUrl).toString(), {
+    headers: { Authorization: `Bearer ${token}`, apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }
+  })
+  if (!userRes.ok) return <div className="p-6">Unauthorized. Invalid token.</div>
+  const user = await userRes.json()
+  const userId = user?.id
+  if (!userId) return <div className="p-6">Unauthorized. Unable to determine user.</div>
+
   const supabase = getSupabaseServer()
 
   const { data: docs, error: dErr } = await supabase.from('parsed_documents').select('*').eq('id', id).limit(1)
@@ -16,6 +38,15 @@ export default async function ParsedPage({ params }: Props) {
   }
   if (!docs || docs.length === 0) return <div className="p-6">Parsed document not found.</div>
   const doc = docs[0]
+
+  // authorization: owner or admin
+  let isAllowed = false
+  if (doc.user_id === userId) isAllowed = true
+  else {
+    const { data: profiles, error: pErr } = await supabase.from('profiles').select('is_admin').eq('user_id', userId).limit(1)
+    if (!pErr && profiles && profiles.length && profiles[0] && profiles[0].is_admin) isAllowed = true
+  }
+  if (!isAllowed) return <div className="p-6">Forbidden. You do not have access to this document.</div>
 
   // Try to read normalized rows if profile_id available
   let experiences = null
@@ -35,6 +66,23 @@ export default async function ParsedPage({ params }: Props) {
   const parsed = doc.parsed_json || {}
   const llm = parsed.llm || null
   const extracted = parsed.extracted || null
+
+  // Prepare download links server-side so client doesn't need to provide Authorization again.
+  let resumeHref: string | null = null
+  try {
+    const parts = (doc.storage_path || '').split('/')
+    const bucket = parts.shift()
+    const path = parts.join('/')
+    if (bucket && path) {
+      const { data: urlData, error: urlErr } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 5)
+      if (!urlErr && urlData && (urlData as any).signedUrl) resumeHref = (urlData as any).signedUrl
+    }
+  } catch (e) {
+    console.error('Failed to create signed url for resume', e)
+  }
+
+  const jsonString = JSON.stringify(parsed || { parsed_at: doc.parsed_at }, null, 2)
+  const jsonDataHref = `data:application/json;charset=utf-8,${encodeURIComponent(jsonString)}`
 
   const fmtDate = (d: string | undefined | null) => {
     try {
@@ -106,10 +154,10 @@ export default async function ParsedPage({ params }: Props) {
 
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <a href={`/api/admin/download-parsed/${doc.id}`}>Download Resume</a>
+              <a href={resumeHref || `/api/admin/download-parsed/${doc.id}`} target="_blank" rel="noopener noreferrer">Download Resume</a>
             </Button>
             <Button variant="ghost" asChild>
-              <a href={`/api/admin/download-parsed/${doc.id}?json=1`}>Download JSON</a>
+              <a href={jsonDataHref} download={`parsed-${doc.id}.json`}>Download JSON</a>
             </Button>
           </div>
         </CardContent>

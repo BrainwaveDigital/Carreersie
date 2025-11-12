@@ -3,6 +3,24 @@ import { getSupabaseServer } from '@/lib/supabase'
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
+    const auth = req.headers.get('authorization')
+    if (!auth || !auth.startsWith('Bearer ')) {
+      return new NextResponse(JSON.stringify({ error: 'Missing Authorization header' }), { status: 401 })
+    }
+    const token = auth.split(' ')[1]
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (!supabaseUrl) return new NextResponse(JSON.stringify({ error: 'SUPABASE URL not configured' }), { status: 500 })
+
+    // validate token
+    const userRes = await fetch(new URL('/auth/v1/user', supabaseUrl).toString(), {
+      headers: { Authorization: `Bearer ${token}`, apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }
+    })
+    if (!userRes.ok) return new NextResponse(JSON.stringify({ error: 'Invalid token' }), { status: 401 })
+    const user = await userRes.json()
+    const userId = user?.id
+    if (!userId) return new NextResponse(JSON.stringify({ error: 'Unable to determine user id' }), { status: 401 })
+
     const id = params.id
     const sb = getSupabaseServer()
     const { data: docs, error: dErr } = await sb.from('parsed_documents').select('id, storage_path').eq('id', id).limit(1)
