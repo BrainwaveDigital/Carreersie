@@ -2,9 +2,11 @@ import Link from 'next/link'
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import dynamic from 'next/dynamic'
-
-const ProfileLinkClient = dynamic(() => import('./ProfileLinkClient'), { ssr: false })
+// ProfileLinkClient is a client component (uses "use client") so we can
+// import it directly here; avoid using next/dynamic with ssr:false inside a
+// Server Component (Next.js disallows that). Importing a client component is
+// a valid client boundary and it will render on the client.
+import ProfileLinkClient from './ProfileLinkClient'
 
 export const metadata = {
   title: 'Create Profile — Careersie',
