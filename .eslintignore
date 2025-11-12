@@ -1,0 +1,3 @@
+# Ignore SQL migration files from ESLint checks
+sql/
+*.sql

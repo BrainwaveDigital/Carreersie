@@ -1,0 +1,13 @@
+-- ARCHIVED: Down migration that removed use_gpt5 column from profiles
+-- This file was moved to sql/archive to avoid editor/CI noise while
+-- migrations are reviewed. Re-enable by moving back to sql/migrations.
+
+-- DO $$
+-- BEGIN
+--     IF EXISTS (
+--         SELECT 1 FROM information_schema.columns
+--         WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'use_gpt5'
+--     ) THEN
+--         ALTER TABLE public.profiles DROP COLUMN use_gpt5;
+--     END IF;
+-- END$$;

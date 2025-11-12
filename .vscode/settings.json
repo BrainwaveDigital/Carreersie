@@ -1,4 +1,21 @@
 {
+  // Treat SQL migration files as PostgreSQL to avoid SQL Server (mssql) diagnostics
+  "files.associations": {
+    // use double-star patterns so the association works regardless of workspace folder depth
+    "**/sql/migrations/*.sql": "pgsql",
+    "**/sql/**/*.sql": "pgsql",
+    "sql/migrations/*.sql": "pgsql",
+    "sql/**/*.sql": "pgsql"
+  },
+  // Hide SQL files from VS Code explorer and search to reduce noisy diagnostics
+  "files.exclude": {
+    "**/sql/": true,
+    "**/sql/**": true
+  },
+  "search.exclude": {
+    "**/sql/": true,
+    "**/sql/**": true
+  },
   "tailwindCSS.includeLanguages": {
     "typescript": "javascript",
     "typescriptreact": "javascriptreact"
@@ -7,5 +24,4 @@
     "strings": true
   },
   "css.lint.unknownAtRules": "ignore"
-
 }

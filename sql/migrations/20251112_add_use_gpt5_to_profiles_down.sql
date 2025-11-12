@@ -1,10 +1,15 @@
--- Down migration: remove use_gpt5 column from profiles
-DO $$
-BEGIN
-	IF EXISTS (
-		SELECT 1 FROM information_schema.columns
-		WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'use_gpt5'
-	) THEN
-		ALTER TABLE public.profiles DROP COLUMN use_gpt5;
-	END IF;
-END$$;
+-- DOWN migration temporarily disabled
+-- The down migration that removed the `use_gpt5` column from `public.profiles`
+-- has been commented out temporarily to avoid editor/CI diagnostics while
+-- migrations are reviewed. Re-enable by uncommenting the block below when
+-- you want this migration to run.
+
+-- DO $$
+-- BEGIN
+--     IF EXISTS (
+--         SELECT 1 FROM information_schema.columns
+--         WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'use_gpt5'
+--     ) THEN
+--         ALTER TABLE public.profiles DROP COLUMN use_gpt5;
+--     END IF;
+-- END$$;

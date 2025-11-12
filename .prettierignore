@@ -1,0 +1,3 @@
+# Ignore SQL files from Prettier formatting/checks
+sql/
+*.sql
