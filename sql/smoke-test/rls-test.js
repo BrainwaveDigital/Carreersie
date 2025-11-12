@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const dotenv = require('dotenv');
+dotenv.config();
 /**
  * RLS smoke-test script for Careersie
  *

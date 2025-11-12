@@ -2,6 +2,9 @@ import Link from 'next/link'
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import dynamic from 'next/dynamic'
+
+const ProfileLinkClient = dynamic(() => import('./ProfileLinkClient'), { ssr: false })
 
 export const metadata = {
   title: 'Create Profile — Careersie',
@@ -28,9 +31,8 @@ export default function ProfileChoosePage() {
               <p className="text-sm text-slate-600">Open your saved profile page to view or update details.</p>
             </CardContent>
             <CardFooter className="justify-start">
-              <Link href="/profile">
-                <Button variant="outline">View Profile</Button>
-              </Link>
+              {/* ProfileLinkClient will link to the latest parsed CV if available (client-side) */}
+              <ProfileLinkClient />
             </CardFooter>
           </Card>
           <Card className="p-6">

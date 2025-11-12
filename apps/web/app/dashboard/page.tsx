@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabaseClient } from '@/lib/supabase'
 import { LogOut } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface User {
   id: string
@@ -134,6 +136,11 @@ export default function DashboardPage() {
               <p className="text-slate-600 text-sm">
                 Complete your profile to stand out to recruiters.
               </p>
+              <div className="mt-4">
+                <Button asChild>
+                  <Link href="/profile/choose">Manage Profile</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
