@@ -36,19 +36,53 @@ export async function ingestParsedAsUser(parsed: ParsedPayload) {
 
   // upsert profile: try update by user_id then insert
   if (parsed.profile) {
-    const safeProfile = { ...parsed.profile, user_id: user.id }
+    // Whitelist of columns actually present on the `profiles` table in the DB.
+    // This avoids sending unknown keys (eg. `display_name`) which can cause
+    // the Supabase/PostgREST client to throw against its schema cache.
+    const profileFields = [
+      'id',
+      'user_id',
+      'full_name',
+      'preferred_name',
+      'headline',
+      'summary',
+      'about',
+      'location',
+      'website',
+      'email',
+      'phone',
+    ]
+
+    const safeProfile: any = {}
+    // If the parser produced `display_name` but the DB uses `preferred_name`,
+    // map it across so user edits or parser output don't get silently dropped.
+    if ((parsed.profile as any).display_name && !(parsed.profile as any).preferred_name) {
+      parsed.profile.preferred_name = (parsed.profile as any).display_name
+    }
+    for (const key of profileFields) {
+      if (key === 'user_id') {
+        // always set user_id to the current user
+        safeProfile.user_id = user.id
+        continue
+      }
+      if (Object.prototype.hasOwnProperty.call(parsed.profile, key)) {
+        safeProfile[key] = (parsed.profile as any)[key]
+      }
+    }
+
     // try update
     const { error: updErr } = await supabaseClient.from('profiles').update(safeProfile).eq('user_id', user.id)
     if (updErr) {
-      // if update failed (no rows), insert
+      // if update failed, try insert
       const { error: insErr } = await supabaseClient.from('profiles').insert(safeProfile)
-      if (insErr) throw insErr
+      if (insErr) throw new Error(insErr.message || JSON.stringify(insErr))
     }
   }
 
   // ensure we have a profile id
   const { data: profilesNow, error: pErr } = await supabaseClient.from('profiles').select('id').eq('user_id', user.id).limit(1)
-  if (pErr || !profilesNow || profilesNow.length === 0) throw new Error('Profile not found')
+  if (pErr) throw new Error(pErr.message || JSON.stringify(pErr))
+  if (!profilesNow || profilesNow.length === 0) throw new Error('Profile not found')
   const profileId = (profilesNow as any)[0].id
 
   // replace experiences/education/skills via delete+bulk-insert
@@ -66,7 +100,7 @@ export async function ingestParsedAsUser(parsed: ParsedPayload) {
     }))
     if (safeExperiences.length) {
       const { error: exErr } = await supabaseClient.from('experiences').insert(safeExperiences)
-      if (exErr) throw exErr
+      if (exErr) throw new Error(exErr.message || JSON.stringify(exErr))
     }
   }
 
@@ -82,7 +116,7 @@ export async function ingestParsedAsUser(parsed: ParsedPayload) {
     }))
     if (safeEducation.length) {
       const { error: edErr } = await supabaseClient.from('education').insert(safeEducation)
-      if (edErr) throw edErr
+      if (edErr) throw new Error(edErr.message || JSON.stringify(edErr))
     }
   }
 
@@ -91,7 +125,7 @@ export async function ingestParsedAsUser(parsed: ParsedPayload) {
     const safeSkills = parsed.skills.map((it: any) => ({ profile_id: profileId, skill: typeof it === 'string' ? it : it.skill || JSON.stringify(it) }))
     if (safeSkills.length) {
       const { error: skErr } = await supabaseClient.from('skills').insert(safeSkills)
-      if (skErr) throw skErr
+      if (skErr) throw new Error(skErr.message || JSON.stringify(skErr))
     }
   }
 

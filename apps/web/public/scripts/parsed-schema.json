@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Parsed CV payload",
+  "type": "object",
+  "properties": {
+    "profile": {
+      "type": "object",
+      "properties": {
+        "id": { "type": ["string", "null"] },
+        "user_id": { "type": ["string", "null"] },
+        "full_name": { "type": "string" },
+  "preferred_name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "headline": { "type": "string" },
+        "summary": { "type": "string" },
+        "about": { "type": "string" },
+        "location": { "type": "string" },
+        "website": { "type": "string" },
+        "phone": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "experiences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "profile_id": { "type": ["string", "null"] },
+          "title": { "type": "string" },
+          "company": { "type": "string" },
+          "location": { "type": "string" },
+          "start_date": { "type": ["string", "null"] },
+          "end_date": { "type": ["string", "null"] },
+          "is_current": { "type": "boolean" },
+          "description": { "type": "string" },
+          "order_index": { "type": ["integer", "null"] },
+          "raw_json": { "type": ["object", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+
+    "education": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "profile_id": { "type": ["string", "null"] },
+          "school": { "type": "string" },
+          "degree": { "type": "string" },
+          "field_of_study": { "type": "string" },
+          "start_year": { "type": ["integer", "string", "null"] },
+          "end_year": { "type": ["integer", "string", "null"] },
+          "description": { "type": "string" },
+          "raw_json": { "type": ["object", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "profile_id": { "type": ["string", "null"] },
+          "name": { "type": "string" },
+          "authority": { "type": "string" },
+          "issued_date": { "type": ["string", "null"] , "format": "date"},
+          "expiry_date": { "type": ["string", "null"], "format": "date" },
+          "raw_json": { "type": ["object", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+
+    "skills": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "type": ["string", "null"] },
+              "profile_id": { "type": ["string", "null"] },
+              "skill": { "type": "string" },
+              "confidence": { "type": ["number", "null"] },
+              "raw_json": { "type": ["object", "null"] }
+            },
+            "additionalProperties": true
+          }
+        ]
+      }
+    },
+
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "profile_id": { "type": ["string", "null"] },
+          "language": { "type": "string" },
+          "proficiency": { "type": "string" },
+          "raw_json": { "type": ["object", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "profile_id": { "type": ["string", "null"] },
+          "name": { "type": "string" },
+          "authority": { "type": "string" },
+          "issued_date": { "type": ["string", "null"], "format": "date" },
+          "expiry_date": { "type": ["string", "null"], "format": "date" },
+          "raw_json": { "type": ["object", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+
+    "organizations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "profile_id": { "type": ["string", "null"] },
+          "name": { "type": "string" },
+          "authority": { "type": "string" },
+          "issued_date": { "type": ["string", "null"], "format": "date" },
+          "expiry_date": { "type": ["string", "null"], "format": "date" },
+          "raw_json": { "type": ["object", "null"] }
+        },
+        "additionalProperties": true
+      }
+    },
+
+  "volunteering": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "profile_id": { "type": ["string", "null"] },
+          "name": { "type": "string" },
+          "authority": { "type": "string" },
+          "issued_date": { "type": ["string", "null"], "format": "date" },
+          "expiry_date": { "type": ["string", "null"], "format": "date" },
+          "raw_json": { "type": ["object", "null"] }
+        },
+        "additionalProperties": true
+      }
+    }
+    ,
+    "extracted": {
+      "type": ["object", "null"],
+      "description": "Heuristic extracted fields (name, email, phone, etc.)"
+    },
+    "llm": {
+      "type": ["object", "null"],
+      "description": "LLM structured output (arrays for experiences, education, skills, etc.)"
+    }
+  },
+  "additionalProperties": true
+}

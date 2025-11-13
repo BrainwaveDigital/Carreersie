@@ -25,7 +25,29 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {process.env.NODE_ENV === 'development' && (
-          <script src="http://localhost:8097" />
+          // Inject React DevTools script only after probing the devtools server
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){
+                try {
+                  if (!window.fetch) return;
+                  // short timeout probe to see if devtools server responds
+                  var controller = new AbortController();
+                  var timeout = setTimeout(function(){ controller.abort(); }, 250);
+                  fetch('http://localhost:8097', { method: 'GET', mode: 'no-cors', signal: controller.signal })
+                    .then(function(){
+                      clearTimeout(timeout);
+                      var s = document.createElement('script');
+                      s.src = 'http://localhost:8097';
+                      s.async = true;
+                      document.head.appendChild(s);
+                    }).catch(function(){ /* devtools not available or probe failed; do nothing */ });
+                } catch (e) {
+                  /* ignore errors */
+                }
+              })();`,
+            }}
+          />
         )}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>

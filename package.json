@@ -1,20 +1,20 @@
 {
   "name": "careersie",
   "private": true,
-  
   "dependencies": {
     "@supabase/supabase-js": "^2.43.0",
-    "openai": "^4.10.0",
     "mammoth": "^1.4.20",
+    "openai": "^4.10.0",
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "dotenv": "^16.0.0",
+    "pg": "^8.16.3",
     "prettier": "^3.6.2",
     "turbo": "^2.6.0",
-    "typescript": "5.9.2",
-    "dotenv": "^16.0.0",
-    "ajv": "^8.12.0",
-    "ajv-formats": "^2.1.1"
+    "typescript": "5.9.2"
   },
   "packageManager": "pnpm@9.0.0",
   "scripts": {
@@ -25,10 +25,15 @@
     "check-types": "turbo run check-types",
     "sql:rls-test": "node sql/smoke-test/rls-test.js",
     "parsing:worker": "node scripts/parsing-worker.js",
-  "check:supabase": "node scripts/check-supabase-env.js",
+    "check:supabase": "node scripts/check-supabase-env.js",
+    "check-db-columns": "node scripts/check-db-columns.js",
     "test:llm-schema": "node scripts/test-llm-validate.js",
     "test:integration": "node scripts/integration-test-upload-parse.js",
-    "run:job": "node scripts/run-job.js"
+    "run:job": "node scripts/run-job.js",
+    "run-parse": "node scripts/run-parse-doc.js",
+    "reprocess-llm": "node scripts/reprocess-llm.js",
+    "backfill-llm": "node scripts/backfill-llm.js",
+    "cleanup-unparsed": "node scripts/cleanup-unparsed.js"
   },
   "engines": {
     "node": ">=18"

@@ -39,6 +39,13 @@ export default function ParsedPage() {
         }
         const usr = authData.user
         setUser(usr)
+        // expose the supabase client to the browser console for debugging
+        try {
+          ;(window as any).__supabase = supabaseClient
+          console.log('Supabase client exposed to window.__supabase for debugging')
+        } catch (e) {
+          // ignore in non-browser contexts
+        }
 
         // fetch parsed document (defensive: catch thrown errors and log env presence)
         let docs: any = null
